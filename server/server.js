@@ -1,6 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const path = require("path");
 const connectDB = require("./config/db");
 const errorMiddleware = require("./middleware/errorMiddleware");
 
@@ -32,17 +33,13 @@ app.use("/api/employees", employeeRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/auth", authRoutes);
 
-// Health check
-app.get("/", (req, res) => {
-  res.json({
-    message: "Employee Performance Analytics API Running",
-    version: "1.0.0",
-    endpoints: {
-      auth: "/api/auth",
-      employees: "/api/employees",
-      ai: "/api/ai",
-    },
-  });
+// Serve React client in production
+const clientBuildPath = path.join(__dirname, "..", "client", "dist");
+app.use(express.static(clientBuildPath));
+
+// All non-API routes serve the React app
+app.get("*", (req, res) => {
+  res.sendFile(path.join(clientBuildPath, "index.html"));
 });
 
 // Global error handler (must be after routes)
